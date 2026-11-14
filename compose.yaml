@@ -1,0 +1,78 @@
+# DEWA data lake stack: HDFS 3.4.3, Hive 4.2.1, HBase 2.6.7, Spark 4.2.1.
+# Start: docker compose up -d   (or: podman compose up -d)
+# The repo is mounted at /workspace in every container.
+name: dewa
+
+x-hadoop-env: &hadoop-env
+  CORE-SITE.XML_fs.defaultFS: hdfs://namenode:8020
+  HDFS-SITE.XML_dfs.namenode.rpc-address: namenode:8020
+  HDFS-SITE.XML_dfs.replication: "1"
+  HDFS-SITE.XML_dfs.namenode.name.dir: /data/name
+  HDFS-SITE.XML_dfs.datanode.data.dir: /data/dn
+  # shortcut: HDFS permission checks off so Spark/Hive/HBase users can share /dewa; turn on with per-zone owners for production
+  HDFS-SITE.XML_dfs.permissions.enabled: "false"
+  HADOOP_HEAPSIZE_MAX: 512m
+
+services:
+  namenode:
+    image: docker.io/apache/hadoop:3.4.3
+    hostname: namenode
+    environment:
+      <<: *hadoop-env
+      ENSURE_NAMENODE_DIR: /data/name
+    # named volumes start root-owned; hand them to the image's hadoop user, then run in the foreground
+    command: ["bash", "-c", "sudo chown hadoop /data && exec /opt/starter.sh hdfs namenode"]
+    ports: ["9870:9870"]
+    volumes: [namenode:/data, ".:/workspace:z"]
+
+  datanode:
+    image: docker.io/apache/hadoop:3.4.3
+    hostname: datanode
+    environment: *hadoop-env
+    command: ["bash", "-c", "sudo chown hadoop /data && exec /opt/starter.sh hdfs datanode"]
+    volumes: [datanode:/data]
+    depends_on: [namenode]
+
+  hive:
+    image: docker.io/apache/hive:4.2.1
+    hostname: hive
+    environment:
+      SERVICE_NAME: hiveserver2
+      DEFAULT_FS: hdfs://namenode:8020
+      HIVE_CUSTOM_CONF_DIR: /hive-conf
+      TZ: UTC
+    # Derby creates metastore_db in the working dir; this image folder is owned by the hive user, so the volume is too
+    working_dir: /opt/hive/data/warehouse
+    ports: ["10000:10000", "10002:10002"]
+    volumes: ["./docker/conf/core-site.xml:/hive-conf/core-site.xml:ro,z", hive-metastore:/opt/hive/data/warehouse, ".:/workspace:z"]
+    depends_on: [namenode, datanode]
+
+  hbase:
+    build: docker/hbase
+    image: localhost/dewa-hbase:2.6.7
+    hostname: hbase
+    ports: ["16010:16010"]
+    volumes: [hbase-zk:/data/zk, ".:/workspace:z"]
+    depends_on: [namenode, datanode]
+
+  spark:
+    image: docker.io/apache/spark:4.2.1-python3
+    hostname: spark
+    command: ["sleep", "infinity"]
+    working_dir: /workspace
+    environment:
+      PATH: /opt/spark/bin:/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      HADOOP_CONF_DIR: /opt/spark/conf
+      SPARK_CONF_DIR: /opt/spark/conf
+    ports: ["4040:4040"]
+    volumes:
+      - "./docker/conf/core-site.xml:/opt/spark/conf/core-site.xml:ro,z"
+      - "./docker/conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro,z"
+      - ".:/workspace:z"
+    depends_on: [namenode, datanode]
+
+volumes:
+  namenode:
+  datanode:
+  hive-metastore:
+  hbase-zk:

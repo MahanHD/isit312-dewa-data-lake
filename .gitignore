@@ -1,0 +1,35 @@
+# Full dataset and downloads stay out of git (only data/sample/ is committed)
+data/download/
+data/raw/
+data/work/
+*.zip
+*.gz
+*.tar
+*.parquet
+*.csv
+!data/sample/*.csv
+*.xlsx
+*.json
+!data/sample/*.json
+
+# Hadoop / Spark / Hive / HBase local output
+metastore_db/
+derby.log
+spark-warehouse/
+target/
+project/target/
+*.class
+*.jar
+*.log
+_SUCCESS
+*.crc
+
+# Python / editors / OS
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+.idea/
+.vscode/
+.DS_Store
+~$*

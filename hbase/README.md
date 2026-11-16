@@ -10,7 +10,8 @@ paths. The loader uses local MapReduce because this stack has no YARN service.
 It uses HBase's FsShell class to check the HDFS source path and preflight Spark
 part-* files before creating the table. Preflight requires six fields, nonempty
 key/reading values, OK or ALERT status, and no quotes or carriage returns. OK rows
-must have empty alert type/time; ALERT rows must supply both. Timestamp and numeric
+must have empty alert type/time; ALERT rows must supply both. The import uses the same part-* glob as preflight, so unrelated visible files
+are not accidentally imported. Timestamp and numeric
 semantics remain the Spark producer's responsibility. Creating the table is idempotent; an existing table is described, not reset.
 
 Input is Spark's **headerless**, six-field, comma-separated meter_status export:
@@ -24,7 +25,9 @@ Every record must have all six positions, including trailing delimiters for empt
 alert fields. Timestamps use yyyy-MM-dd HH:mm:ss. Values are strings. ImportTsv
 is a delimiter parser, not an RFC CSV parser: no quoting, embedded commas or
 newlines are allowed in fields. Spark must export empty fields as empty text,
-not quoted empty strings. It must emit exactly one row per meter. Validate these
+not quoted empty strings. In Spark CSV export, explicitly set
+`.option("emptyValue", "").option("nullValue", "")`; Spark's default serialization
+of empty strings can otherwise produce quoted empty fields that preflight rejects. It must emit exactly one row per meter. Validate these
 conditions upstream; ImportTsv's bad-line check validates structure, not timestamp
 formats or status semantics. Hadoop ignores Spark's _SUCCESS and hidden files.
 

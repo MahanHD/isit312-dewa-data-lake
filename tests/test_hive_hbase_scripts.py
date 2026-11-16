@@ -20,6 +20,8 @@ class ScriptContracts(unittest.TestCase):
 import json, os, sys
 with open(os.environ['CALL_LOG'], 'a') as out:
     out.write(json.dumps(sys.argv[1:]) + '\\n')
+if os.environ.get('FAIL_COMMAND') in sys.argv[1:]:
+    sys.exit(17)
 if len(sys.argv) > 2 and sys.argv[2] == '-cat':
     print(os.environ.get('STATUS_ROWS', ''), end='')
 '''
@@ -67,6 +69,34 @@ if len(sys.argv) > 2 and sys.argv[2] == '-cat':
         self.assertIn('-Dmapreduce.framework.name=local', args)
         self.assertIn('-Dimporttsv.skip.empty.columns=false', args)
         self.assertIn('-Dimporttsv.skip.bad.lines=false', args)
+        self.assertEqual(args[-1], '/dewa/curated/meter_status/part-*')
+        self.assertEqual(args[-1], self.calls()[1][-1])
+
+    def test_missing_hdfs_input_stops_before_table_creation(self):
+        self.env['FAIL_COMMAND'] = '-test'
+        result = self.run_script('hbase/02_load.sh')
+        self.assertEqual(result.returncode, 17)
+        self.assertEqual(len(self.calls()), 1)
+
+    def test_failed_preflight_read_stops_before_table_creation(self):
+        self.env['FAIL_COMMAND'] = '-cat'
+        self.assertNotEqual(self.run_script('hbase/02_load.sh').returncode, 0)
+        self.assertEqual(len(self.calls()), 2)
+
+    def test_table_creation_failure_stops_before_import(self):
+        self.env['STATUS_ROWS'] = 'MAC000002,2013-01-01 00:00:00,0.5,OK,,\n'
+        self.env['FAIL_COMMAND'] = 'shell'
+        self.assertEqual(self.run_script('hbase/02_load.sh').returncode, 17)
+        self.assertFalse(any('org.apache.hadoop.hbase.mapreduce.ImportTsv' in call for call in self.calls()))
+
+    def test_import_failure_reaches_caller(self):
+        self.env['STATUS_ROWS'] = 'MAC000002,2013-01-01 00:00:00,0.5,OK,,\n'
+        self.env['FAIL_COMMAND'] = 'org.apache.hadoop.hbase.mapreduce.ImportTsv'
+        self.assertEqual(self.run_script('hbase/02_load.sh').returncode, 17)
+
+    def test_beeline_failure_reaches_caller(self):
+        self.env['FAIL_COMMAND'] = '--force=false'
+        self.assertEqual(self.run_script('hive/run.sh', 'hive/01_create_tables.hql').returncode, 17)
 
     def test_invalid_rows_never_create_or_import(self):
         for row in ('', 'meter_id,last_reading_ts,last_kwh,alert_status,alert_type,alert_ts\n',

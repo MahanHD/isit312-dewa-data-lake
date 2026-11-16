@@ -30,4 +30,4 @@ exec hbase org.apache.hadoop.hbase.mapreduce.ImportTsv \
   -Dimporttsv.columns=HBASE_ROW_KEY,r:ts,r:kwh,a:status,a:type,a:ts \
   -Dimporttsv.skip.bad.lines=false \
   -Dimporttsv.skip.empty.columns=false \
-  dewa_meter_status "$base/curated/meter_status"
+  dewa_meter_status "$base/curated/meter_status/part-*"

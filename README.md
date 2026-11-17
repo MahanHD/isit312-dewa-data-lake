@@ -12,9 +12,9 @@ Electricity and Water Authority)** smart meter data and build a working version 
 | Part | Read | Make | Branch | Done when |
 |---|---|---|---|---|
 | Architecture + DEWA research | [About the project](#about-the-project), Shared rules 1 | diagrams in `architecture/` (`.drawio` + `.png`), notes in `docs/` | `architecture/<topic>` | the diagrams show every zone, tool and data flow in this README, and the notes cover DEWA's current setup and why we chose (or didn't choose) each tool |
-| Data prep | Shared rules 1-2, How to run 0-1 | `data/generate_customers.py`, `data/convert_tariffs.py` | `data/<topic>` | the scripts write `customers.csv` and `tariffs.csv` into `data/download/`, and `load_hdfs.sh` puts them in `/dewa/raw/` |
-| Spark | Shared rules 1-5, [`spark/README.md`](spark/README.md) | `spark/*.py`, copied from `spark/_template.py` | `spark/<topic>` | each job runs on the sample and the full data, and its output matches the paths and schemas in Shared rules 1, 3 and 4 |
-| Hive + HBase | Shared rules 1, 3, 4, 6, 7 | `hive/01_create_tables.hql`, `hive/02_reports.hql`, `hive/03_refresh_partitions.hql`, `hbase/01_create_table.rb`, `hbase/02_load.sh` | `hive/<topic>`, `hbase/<topic>` | the Hive tables read the Spark output, the report queries return results, and `get 'dewa_meter_status', 'MAC000016'` returns a row |
+| Data prep | Shared rules 1, 2, 8, How to run 0-1 | `data/generate_customers.py`, `data/convert_tariffs.py` | `data/<topic>` | the scripts write `customers.csv` and `tariffs.csv` into `data/download/`, and `load_hdfs.sh` puts them in `/dewa/raw/` |
+| Spark | Shared rules 1-5, 8, [`spark/README.md`](spark/README.md) | `spark/*.py`, copied from `spark/_template.py` | `spark/<topic>` | each job runs on the sample and the full data, and its output matches the paths and schemas in Shared rules 1, 3 and 4 |
+| Hive + HBase | Shared rules 1, 3, 4, 6-8 | `hive/01_create_tables.hql`, `hive/02_reports.hql`, `hive/03_refresh_partitions.hql`, `hbase/01_create_table.rb`, `hbase/02_load.sh` | `hive/<topic>`, `hbase/<topic>` | the Hive tables read the Spark output, the report queries return results, and `get 'dewa_meter_status', 'MAC000016'` returns a row |
 
 Data prep commits the **scripts only**. The files they produce stay in `data/download/`, which git ignores.
 
@@ -184,6 +184,22 @@ or `ALERT`. The anomaly rules go in `spark/README.md`; the column names stay fix
 - Table **`dewa_meter_status`**, row key `meter_id`.
 - Family `r` (latest reading): `r:ts`, `r:kwh`. Family `a` (alert): `a:status`, `a:type`, `a:ts`.
 - Values are strings; timestamps as `yyyy-MM-dd HH:mm:ss`. Loaded from `/dewa/curated/meter_status/`.
+
+### 8. Extra sources
+
+Data prep writes the raw files. Spark (`clean_sources.py`) writes each to `cleaned/<name>` as unpartitioned Parquet,
+and Hive reads it as `dewa.<name>`.
+
+| Table | Columns | Rule | Joins readings on |
+|---|---|---|---|
+| `tariffs` | `tariff_ts TIMESTAMP, price_band STRING, price_p_per_kwh DOUBLE` | half hours of 2013 from `Tariffs.xlsx`; `price_band` is `High` (67.20p), `Normal` (11.76p) or `Low` (3.99p) | `reading_ts = tariff_ts`, ToU meters only (Std meters pay a flat 14.228p) |
+| `weather` | `weather_ts TIMESTAMP, temperature_c DOUBLE, precipitation_mm DOUBLE` | hourly, London local time | the hour of `reading_ts` |
+| `bank_holidays` | `holiday_date DATE, name STRING` | England only: entries with `global` true or `GB-ENG` in `counties` | the date of `reading_ts` |
+| `customers` | `meter_id STRING, customer_id STRING, area STRING, property_type STRING, household_size INT` | generated, one row per meter in the readings; `area` is a Dubai community (e.g. `Al Barsha`), `property_type` is `apartment` or `villa`; no names or contact details | `meter_id` |
+
+Raw files from data prep: `raw/tariffs/tariffs.csv` with header `TariffDateTime,Tariff` (`TariffDateTime` converted
+from Excel serial numbers to `yyyy-MM-dd HH:mm:ss`), and `raw/customers/customers.csv` with the `customers` columns
+above as its header.
 
 ## How to run
 

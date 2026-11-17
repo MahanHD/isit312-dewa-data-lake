@@ -42,7 +42,7 @@ Capture real output under screenshots/hive/: table list and DESCRIBE FORMATTED,
 raw sample rows, SHOW PARTITIONS, reports for a populated month, and EXPLAIN for a
 month-filtered query. Compare report 6's cleaned kWh sum with report 1's monthly
 sum (allow floating-point rounding). Record row counts, month, data scope and
-execution time; a three-household sample does not establish full-scale performance.
+execution time; the five-household sample does not establish full-scale performance.
 
 Missing readings are coverage indicators, not confirmed meter failures. A day with
 no records is absent from daily_usage and is not detected by report 5. London

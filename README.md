@@ -197,9 +197,11 @@ and Hive reads it as `dewa.<name>`.
 | `bank_holidays` | `holiday_date DATE, name STRING` | England only: entries with `global` true or `GB-ENG` in `counties` | the date of `reading_ts` |
 | `customers` | `meter_id STRING, customer_id STRING, area STRING, property_type STRING, household_size INT` | generated, one row per meter in the readings; `area` is a Dubai community (e.g. `Al Barsha`), `property_type` is `apartment` or `villa`; no names or contact details | `meter_id` |
 
-Raw files from data prep: `raw/tariffs/tariffs.csv` with header `TariffDateTime,Tariff` (`TariffDateTime` converted
-from Excel serial numbers to `yyyy-MM-dd HH:mm:ss`), and `raw/customers/customers.csv` with the `customers` columns
-above as its header.
+Raw files from data prep:
+- `raw/tariffs/tariffs.csv`, header `tariff_datetime,tariff_band,tou_price_pence_per_kwh,std_price_pence_per_kwh`
+  (`yyyy-MM-dd HH:mm:ss`, `High`/`Normal`/`Low`). Spark maps `tariff_datetime` -> `tariff_ts`, `tariff_band` ->
+  `price_band`, `tou_price_pence_per_kwh` -> `price_p_per_kwh`.
+- `raw/customers/customers.csv`, with the `customers` columns above as its header.
 
 ## How to run
 

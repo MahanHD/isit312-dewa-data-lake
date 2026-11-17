@@ -14,7 +14,7 @@ Electricity and Water Authority)** smart meter data and build a working version 
 | Architecture + DEWA research | [About the project](#about-the-project), Shared rules 1 | diagrams in `architecture/` (`.drawio` + `.png`), notes in `docs/` | `architecture/<topic>` | the diagrams show every zone, tool and data flow in this README, and the notes cover DEWA's current setup and why we chose (or didn't choose) each tool |
 | Data prep | Shared rules 1-2, How to run 0-1 | `data/generate_customers.py`, `data/convert_tariffs.py` | `data/<topic>` | the scripts write `customers.csv` and `tariffs.csv` into `data/download/`, and `load_hdfs.sh` puts them in `/dewa/raw/` |
 | Spark | Shared rules 1-5, [`spark/README.md`](spark/README.md) | `spark/*.py`, copied from `spark/_template.py` | `spark/<topic>` | each job runs on the sample and the full data, and its output matches the paths and schemas in Shared rules 1, 3 and 4 |
-| Hive + HBase | Shared rules 1, 3, 4, 6, 7 | `hive/01_create_tables.hql`, `hive/02_reports.hql`, `hbase/01_create_table.txt` | `hive/<topic>`, `hbase/<topic>` | the Hive tables read the Spark output, the report queries return results, and `get 'dewa_meter_status', 'MAC000016'` returns a row |
+| Hive + HBase | Shared rules 1, 3, 4, 6, 7 | `hive/01_create_tables.hql`, `hive/02_reports.hql`, `hive/03_refresh_partitions.hql`, `hbase/01_create_table.rb`, `hbase/02_load.sh` | `hive/<topic>`, `hbase/<topic>` | the Hive tables read the Spark output, the report queries return results, and `get 'dewa_meter_status', 'MAC000016'` returns a row |
 
 Data prep commits the **scripts only**. The files they produce stay in `data/download/`, which git ignores.
 
@@ -27,7 +27,7 @@ Data prep commits the **scripts only**. The files they produce stay in `data/dow
 | Cleaning, aggregates, peaks, anomalies, meter_status export | Spark | `spark/*.py` (order and anomaly rules in `spark/README.md`) |
 | Simulated live stream (Structured Streaming reading a folder) | Spark | `spark/stream_*.py` |
 | Create tables, reporting queries | Hive + HBase | `hive/01_create_tables.hql`, `hive/02_reports.hql` |
-| HBase table and load | Hive + HBase | `hbase/` |
+| HBase table and load | Hive + HBase | `hbase/01_create_table.rb`, `hbase/02_load.sh` |
 
 ### Git in 5 commands
 

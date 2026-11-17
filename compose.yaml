@@ -52,7 +52,7 @@ services:
     image: localhost/dewa-hbase:2.6.7
     hostname: hbase
     ports: ["16010:16010"]
-    volumes: [hbase-zk:/data/zk, ".:/workspace:z"]
+    volumes: [hbase-zk:/data/zk, "./docker/conf/core-site.xml:/opt/hbase/conf/core-site.xml:ro,z", ".:/workspace:z"]
     depends_on: [namenode, datanode]
 
   spark:

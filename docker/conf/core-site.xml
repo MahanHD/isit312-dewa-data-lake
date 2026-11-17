@@ -1,4 +1,6 @@
 <?xml version="1.0"?>
 <configuration>
   <property><name>fs.defaultFS</name><value>hdfs://namenode:8020</value></property>
+  <!-- one datanode, so clients (Spark, Hive) must ask for one copy -->
+  <property><name>dfs.replication</name><value>1</value></property>
 </configuration>

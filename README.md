@@ -1,9 +1,47 @@
 # DEWA Smart Meter Data Lake (ISIT312 group project)
 
-ISIT312 Big Data Management, Autumn 2026, University of Wollongong in Dubai.
+ISIT312 Big Data Management, Autumn 2026, University of Wollongong in Dubai. We design a data lake for **DEWA (Dubai
+Electricity and Water Authority)** smart meter data and build a working version of it on Hadoop, Spark, Hive and HBase.
 
-We design a data lake for **DEWA (Dubai Electricity and Water Authority)** smart meter data and build a working
-version of it. DEWA does not publish per-meter readings, so we use a real public dataset as a stand-in:
+## Start here
+
+1. Set up the stack once (see [Setup](#setup)), then find your part below.
+2. Work on your own branch, never directly on `main` (see [Git in 5 commands](#git-in-5-commands)).
+3. Read the [Shared rules](#shared-rules) before writing code. Paths, column names and table names are fixed there.
+
+| Part | Read | Make | Branch | Done when |
+|---|---|---|---|---|
+| Architecture + DEWA research | [About the project](#about-the-project), Shared rules 1 | diagrams in `architecture/` (`.drawio` + `.png`), notes in `docs/` | `architecture/<topic>` | the diagrams show every zone, tool and data flow in this README, and the notes cover DEWA's current setup and why we chose (or didn't choose) each tool |
+| Data prep | Shared rules 1-2, How to run 0-1 | `data/generate_customers.py`, `data/convert_tariffs.py` | `data/<topic>` | the scripts write `customers.csv` and `tariffs.csv` into `data/download/`, and `load_hdfs.sh` puts them in `/dewa/raw/` |
+| Spark | Shared rules 1-5, [`spark/README.md`](spark/README.md) | `spark/*.py`, copied from `spark/_template.py` | `spark/<topic>` | each job runs on the sample and the full data, and its output matches the paths and schemas in Shared rules 1, 3 and 4 |
+| Hive + HBase | Shared rules 1, 3, 4, 6, 7 | `hive/01_create_tables.hql`, `hive/02_reports.hql`, `hbase/01_create_table.txt` | `hive/<topic>`, `hbase/<topic>` | the Hive tables read the Spark output, the report queries return results, and `get 'dewa_meter_status', 'MAC000016'` returns a row |
+
+Data prep commits the **scripts only**. The files they produce stay in `data/download/`, which git ignores.
+
+### Open tasks
+
+| Task | Part | Output |
+|---|---|---|
+| Customer record generator (one row per `meter_id`) | Data prep | `data/generate_customers.py` (writes `data/download/customers.csv`) |
+| Tariffs XLSX -> CSV | Data prep | `data/convert_tariffs.py` (writes `data/download/tariffs.csv`) |
+| Cleaning, aggregates, peaks, anomalies, meter_status export | Spark | `spark/*.py` (order and anomaly rules in `spark/README.md`) |
+| Simulated live stream (Structured Streaming reading a folder) | Spark | `spark/stream_*.py` |
+| Create tables, reporting queries | Hive + HBase | `hive/01_create_tables.hql`, `hive/02_reports.hql` |
+| HBase table and load | Hive + HBase | `hbase/` |
+
+### Git in 5 commands
+
+```bash
+git switch -c spark/clean-readings              # 1. new branch from an up-to-date main (git switch main && git pull first)
+git add spark/clean_readings.py                 # 2. stage your files (check `git status` first)
+git commit -m "Add readings cleaning job"       # 3. commit with a short message
+git push -u origin spark/clean-readings         # 4. push the branch to GitHub
+# 5. open the link git prints (or GitHub > "Compare & pull request"), create the pull request, ask someone from your part to review
+```
+
+## About the project
+
+DEWA does not publish per-meter readings, so we use a real public dataset as a stand-in:
 
 > **SmartMeter Energy Consumption Data in London Households** (London Datastore, UK Power Networks).
 > 5,567 homes, half-hourly electricity readings, Nov 2011 - Feb 2014, ~167M rows, 8.5 GB of CSV in 168 files.
@@ -18,14 +56,12 @@ source files --> HDFS data lake --------------------------------> Spark --------
 Extra sources: tariffs (Excel, same London Datastore page), London weather (JSON), UK bank holidays (JSON),
 generated customer records.
 
-## Repo layout and parts
-
 ```
 compose.yaml    the whole stack in containers (+ docker/ for its config and the HBase image)
 architecture/   diagrams and design notes                  Architecture + DEWA research
 docs/           report notes, references, meeting notes    Architecture + DEWA research
 data/           download, sample and HDFS load scripts     Data prep
-spark/          Spark jobs                                 Spark
+spark/          Spark jobs + template                      Spark
 hive/           .hql files + run.sh                        Hive + HBase
 hbase/          HBase table and load scripts               Hive + HBase
 screenshots/    evidence for the report, one folder per part
@@ -34,19 +70,10 @@ screenshots/    evidence for the report, one folder per part
 Each part writes its own report section and slides; the sections are merged into one report at the end.
 Screenshots are named `screenshots/<part>/NN-what-it-shows.png`.
 
-## Environment
+## Setup
 
-We use current releases in containers (the course VM is for labs only), so everyone has the same setup on
-Windows, macOS or Linux.
-
-| Tool | Version | Notes |
-|---|---|---|
-| Hadoop HDFS | 3.4.3 | official `apache/hadoop` image |
-| Hive | 4.2.1 | HiveServer2, Tez, Derby metastore; official `apache/hive` image |
-| HBase | 2.6.7 | standalone, tables stored in HDFS; built from `docker/hbase/` |
-| Spark | 4.2.1 | PySpark (Python 3.10), local mode; official `apache/spark` image |
-
-### Setup
+We use current releases in containers (the course VM is for labs only): Hadoop HDFS 3.4.3, Hive 4.2.1,
+HBase 2.6.7, Spark 4.2.1 (PySpark).
 
 1. Install Docker Desktop (or Docker / Podman on Linux) and give it at least **6 GB of RAM**.
 2. Clone the repo and, from its folder:
@@ -61,9 +88,7 @@ Windows, macOS or Linux.
 
 - The repo is mounted at `/workspace` in every container: edit on your machine, run inside the containers.
 - `docker compose stop` / `down` keep all data. `docker compose down -v` **deletes HDFS, Hive and HBase data**.
-- Hive's `beeline` needs a terminal, so don't use `docker compose exec -T` with Hive.
 - Only one machine runs the full dataset (~10 GB extra disk). Everyone else works with `data/sample/`.
-- Apple Silicon: the Hadoop image is amd64-only and runs under emulation (not yet tested on a Mac).
 
 ## Shared rules
 
@@ -167,7 +192,7 @@ From the repo folder, with the stack up.
 ```bash
 # 0. Get the data (data prep, full run only; Git Bash on Windows)
 bash data/download.sh          # into data/download/ (git-ignored), ~760 MB
-bash data/make_sample.sh       # rebuilds data/sample/readings_sample.csv (3 households, already in git)
+bash data/make_sample.sh       # rebuilds data/sample/readings_sample.csv (5 households, already in git)
 
 # 1. Load into HDFS raw (streams the CSVs out of the zip; re-running skips loaded files)
 docker compose exec namenode bash /workspace/data/load_hdfs.sh
@@ -183,11 +208,8 @@ docker compose exec hive bash /workspace/hive/run.sh hive/01_create_tables.hql
 docker compose exec hive bash /workspace/hive/run.sh hive/02_reports.hql
 docker compose exec hive beeline -u jdbc:hive2://localhost:10000        # interactive
 
-# 4. HBase
+# 4. HBase (loading meter_status: see Details)
 docker compose exec hbase hbase shell
-docker compose exec hbase hbase org.apache.hadoop.hbase.mapreduce.ImportTsv \
-  -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,r:ts,r:kwh,a:status,a:type,a:ts \
-  dewa_meter_status /dewa/curated/meter_status
 ```
 
 **On the course VM** (fallback if Docker won't run on your laptop; not yet tested end to end): run the same
@@ -195,22 +217,34 @@ commands without `docker compose exec <service>` and with relative paths, e.g. `
 `spark-submit spark/<job>.py`. For Hive use `hive --hivevar base=/dewa -f hive/<file>.hql`. PySpark 3.0.3 needs
 Python 3.8 or older.
 
-## Open tasks
-
-| Task | Part | Output |
-|---|---|---|
-| Customer record generator (one row per `meter_id`) | Data prep | `data/generate_customers.py` -> `data/download/customers.csv` |
-| Tariffs XLSX -> CSV | Data prep | `data/download/tariffs.csv` |
-| Cleaning, aggregates, peaks, anomalies, meter_status export | Spark | `spark/*.py` + `spark/README.md` |
-| Simulated live stream (Structured Streaming reading a folder) | Spark | `spark/stream_*.py` |
-| Create tables, reporting queries | Hive + HBase | `hive/01_create_tables.hql`, `hive/02_reports.hql` |
-| HBase table and load | Hive + HBase | `hbase/` |
-
 ## Git rules
 
 - Never commit the full dataset, zips or large files; check `git status` before committing.
-- One branch per part (`spark/...`, `hive/...`), pull request, one reviewer from your part.
+- One branch per part, pull request, one reviewer from your part.
 - No passwords, tokens or personal details.
+
+## Details
+
+| Tool | Version | Container |
+|---|---|---|
+| Hadoop HDFS | 3.4.3 (Java 11) | `namenode`, `datanode`; official `apache/hadoop` image, one datanode, replication 1 |
+| Hive | 4.2.1 (Java 21) | `hive`; official `apache/hive` image: HiveServer2 with Tez in local mode and an embedded Derby metastore |
+| HBase | 2.6.7 (Java 17) | `hbase`; built from `docker/hbase/`, standalone (master, region server and ZooKeeper in one process), tables stored in HDFS under `/hbase` |
+| Spark | 4.2.1 (Java 21, Python 3.10) | `spark`; official `apache/spark` image, local mode, settings in `docker/conf/spark-defaults.conf` |
+
+- **Loading HBase** from Spark's CSV uses HBase's `ImportTsv` tool:
+
+  ```bash
+  docker compose exec hbase hbase org.apache.hadoop.hbase.mapreduce.ImportTsv \
+    -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,r:ts,r:kwh,a:status,a:type,a:ts \
+    dewa_meter_status /dewa/curated/meter_status
+  ```
+- **beeline** in Hive 4.2.1 needs a terminal and hangs on `-f` inside containers, so `hive/run.sh` passes the file
+  through `-e`. Don't use `docker compose exec -T` with Hive.
+- **Apple Silicon**: Hive, Spark and HBase images run natively; the Hadoop image is amd64-only and runs under
+  Docker Desktop's emulation (not yet tested on a Mac).
+- **Sample**: `data/sample/readings_sample.csv` holds every row of 5 households (3 `Std`, 2 `ToU`), 85,822 rows,
+  in the original format.
 
 ## Data licence
 

@@ -19,6 +19,7 @@ docker compose exec spark spark-submit spark/<job>.py
 | - | `stream_*.py` | a folder of replayed readings | live demo only, not part of the batch run |
 
 Each job overwrites its own output, so a job can be re-run on its own once the jobs before it have run.
+`clean_sources.py` skips a source whose raw file isn't in HDFS yet, so the others can be built before data prep is done.
 Test on the sample first (main README, How to run step 1), then on the full data.
 
 ## Anomaly rules

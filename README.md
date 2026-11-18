@@ -29,7 +29,6 @@ Data prep commits the **scripts only**. The files they produce stay in `data/dow
 | Demo dashboard on top of Hive, started only for the demo | Hive + HBase | `compose.yaml` profile + `dashboard/` | Fri 20 |
 | Review pass: bugs, contradictions, unclear code or docs (no logic changes, tests still pass) | Hive + HBase | small PRs | Fri 20 |
 | Hourly and daily totals with peaks | Spark | `spark/aggregates.py` | Fri 20 |
-| Live stream demo (Structured Streaming reading a folder) | Spark | `spark/stream_*.py` | Fri 20 |
 | Full run on the full data + screenshots | everyone | `screenshots/` | Sat 21 |
 
 ### Git in 5 commands
@@ -114,8 +113,11 @@ Base folder **`/dewa`** (`$DEWA_BASE` in scripts, `${hivevar:base}` in Hive). Us
 | cleaned | `/dewa/cleaned/<source>/` | tariffs, weather, bank_holidays, customers | Parquet |
 | curated | `/dewa/curated/<table>/reading_month=YYYY-MM/` | `hourly_usage`, `daily_usage`, `anomalies` | Parquet |
 | curated | `/dewa/curated/meter_status/` | latest reading + alert per meter, for HBase | CSV, no header |
+| stream | `/dewa/stream/incoming/` | replayed readings for the live demo, one file per day, raw columns (Shared rules 2) | CSV with header |
+| stream | `/dewa/stream/alerts/` | spikes found by the stream: `meter_id, reading_ts, kwh, threshold, detected_at` | Parquet |
 
 - **raw is never changed.** Only data prep writes there, and only by adding files.
+- **stream is for the live demo only** (`spark/stream_*`). Delete `/dewa/stream` to run the demo again from the start.
 - Only Spark jobs write to cleaned and curated; re-running a job overwrites its own output folder.
 - Readings tables are partitioned **by month** (`reading_month=2013-01`, string). Daily would mean ~830 folders of
   small files, which HDFS and Hive handle badly.

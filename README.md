@@ -212,6 +212,10 @@ From the repo folder, with the stack up.
 bash data/download.sh          # into data/download/ (git-ignored), ~760 MB
 bash data/make_sample.sh       # rebuilds data/sample/readings_sample.csv (5 households, already in git)
 
+# Generate customer records and convert tariffs
+python data/generate_customers.py --source full
+python data/convert_tariffs.py
+
 # 1. Load into HDFS raw (streams the CSVs out of the zip; re-running skips loaded files)
 docker compose exec namenode bash /workspace/data/load_hdfs.sh
 #    ...or just the sample:

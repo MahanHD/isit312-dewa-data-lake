@@ -20,14 +20,17 @@ Data prep commits the **scripts only**. The files they produce stay in `data/dow
 
 ### Open tasks
 
-| Task | Part | Output |
-|---|---|---|
-| Customer record generator (one row per `meter_id`) | Data prep | `data/generate_customers.py` (writes `data/download/customers.csv`) |
-| Tariffs XLSX -> CSV | Data prep | `data/convert_tariffs.py` (writes `data/download/tariffs.csv`) |
-| Cleaning, aggregates, peaks, anomalies, meter_status export | Spark | `spark/*.py` (order and anomaly rules in `spark/README.md`) |
-| Simulated live stream (Structured Streaming reading a folder) | Spark | `spark/stream_*.py` |
-| Create tables, reporting queries | Hive + HBase | `hive/01_create_tables.hql`, `hive/02_reports.hql` |
-| HBase table and load | Hive + HBase | `hbase/01_create_table.rb`, `hbase/02_load.sh` |
+| Task | Part | Output | Due |
+|---|---|---|---|
+| Customers file in the Shared rules 8 columns (no names), then regenerate | Hive + HBase, helping data prep | `data/generate_customers.py` | Thu 19 |
+| The four extra Hive tables (Shared rules 8) | Hive + HBase | `hive/01_create_tables.hql` | Thu 19 |
+| Reports that use the extra tables (tariff cost, weather, holidays) | Hive + HBase | `hive/02_reports.hql` | Fri 20 |
+| One script that runs the whole pipeline in order and checks each step | Hive + HBase | `run_pipeline.sh` | Fri 20 |
+| Demo dashboard on top of Hive, started only for the demo | Hive + HBase | `compose.yaml` profile + `dashboard/` | Fri 20 |
+| Review pass: bugs, contradictions, unclear code or docs (no logic changes, tests still pass) | Hive + HBase | small PRs | Fri 20 |
+| Hourly and daily totals with peaks | Spark | `spark/aggregates.py` | Fri 20 |
+| Live stream demo (Structured Streaming reading a folder) | Spark | `spark/stream_*.py` | Fri 20 |
+| Full run on the full data + screenshots | everyone | `screenshots/` | Sat 21 |
 
 ### Git in 5 commands
 

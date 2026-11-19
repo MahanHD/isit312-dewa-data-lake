@@ -3,7 +3,9 @@
 import csv
 from contextlib import redirect_stdout
 from io import StringIO
+import os
 from pathlib import Path
+import stat
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
@@ -110,11 +112,25 @@ class CustomerGeneration(unittest.TestCase):
             generate("full", self.archive, self.sample, self.output)
         self.assertFalse(self.output.exists())
 
+    @unittest.skipUnless(os.name == "posix", "requires POSIX file modes")
+    def test_published_customer_csv_has_mode_0644(self):
+        self.sample.write_bytes(READINGS_HEADER + b"MAC000001,Std,other\n")
+        with redirect_stdout(StringIO()):
+            generate("sample", self.archive, self.sample, self.output)
+        self.assertEqual(stat.S_IMODE(self.output.stat().st_mode), 0o644)
+
     def test_failed_publish_preserves_output_and_removes_staging_file(self):
         self.sample.write_bytes(READINGS_HEADER + b"MAC000001,Std,other\n")
-        self.output.write_bytes(b"existing customers")
-        with patch("data.generate_customers.os.replace", side_effect=OSError("publish failed")):
-            with redirect_stdout(StringIO()), self.assertRaisesRegex(OSError, "publish failed"):
-                generate("sample", self.archive, self.sample, self.output)
-        self.assertEqual(self.output.read_bytes(), b"existing customers")
-        self.assertEqual(set(self.directory.iterdir()), {self.output, self.sample})
+        with redirect_stdout(StringIO()):
+            generate("sample", self.archive, self.sample, self.output)
+        original = self.output.read_bytes()
+        original_mode = stat.S_IMODE(self.output.stat().st_mode)
+        self.sample.write_bytes(READINGS_HEADER + b"MAC000002,Std,other\n")
+        for operation in ("chmod", "replace"):
+            with self.subTest(operation=operation), redirect_stdout(StringIO()):
+                with patch(f"data.generate_customers.os.{operation}", side_effect=OSError("publish failed")):
+                    with self.assertRaisesRegex(OSError, "publish failed"):
+                        generate("sample", self.archive, self.sample, self.output)
+                self.assertEqual(self.output.read_bytes(), original)
+                self.assertEqual(stat.S_IMODE(self.output.stat().st_mode), original_mode)
+                self.assertEqual(set(self.directory.iterdir()), {self.output, self.sample})

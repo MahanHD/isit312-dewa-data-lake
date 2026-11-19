@@ -94,6 +94,7 @@ def generate(source: str, zip_path: Path, sample_path: Path, output: Path) -> Co
                     PROPERTY_TYPES[digest[1] % len(PROPERTY_TYPES)],
                     1 + digest[2] % 6,
                 ])
+        os.chmod(tmp, 0o644)
         os.replace(tmp, output)
     finally:
         if os.path.exists(tmp):

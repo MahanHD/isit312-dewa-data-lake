@@ -140,6 +140,7 @@ def convert(input_path: Path, output: Path, allow_partial: bool = False) -> list
             writer.writerow(HEADER)
             for dt, band in rows:
                 writer.writerow([dt.strftime("%Y-%m-%d %H:%M:%S"), band.title(), RATES[band], STD_RATE])
+        os.chmod(tmp, 0o644)
         os.replace(tmp, output)
     finally:
         if os.path.exists(tmp):

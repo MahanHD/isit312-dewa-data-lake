@@ -269,7 +269,7 @@ Python 3.8 or older.
 - **beeline** in Hive 4.2.1 needs a terminal and hangs on `-f` inside containers, so `hive/run.sh` passes the file
   through `-e`. Don't use `docker compose exec -T` with Hive.
 - **Apple Silicon**: Hive, Spark and HBase images run natively; the Hadoop image is amd64-only and runs under
-  Docker Desktop's emulation (not yet tested on a Mac).
+  Docker Desktop's emulation (tested on a MacBook).
 - **Sample**: `data/sample/readings_sample.csv` holds every row of 5 households (3 `Std`, 2 `ToU`), 85,822 rows,
   in the original format.
 

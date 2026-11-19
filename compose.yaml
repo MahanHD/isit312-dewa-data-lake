@@ -20,7 +20,8 @@ services:
     environment:
       <<: *hadoop-env
       ENSURE_NAMENODE_DIR: /data/name
-    # named volumes start root-owned; hand them to the image's hadoop user, then run in the foreground
+    # Docker creates named volumes root-owned; skip the image's starter (it formats first), chown, then run it
+    entrypoint: ["/usr/local/bin/dumb-init", "--"]
     command: ["bash", "-c", "sudo chown hadoop /data && exec /opt/starter.sh hdfs namenode"]
     ports: ["9870:9870"]
     volumes: [namenode:/data, ".:/workspace:z"]
@@ -29,6 +30,7 @@ services:
     image: docker.io/apache/hadoop:3.4.3
     hostname: datanode
     environment: *hadoop-env
+    entrypoint: ["/usr/local/bin/dumb-init", "--"]
     command: ["bash", "-c", "sudo chown hadoop /data && exec /opt/starter.sh hdfs datanode"]
     volumes: [datanode:/data]
     depends_on: [namenode]

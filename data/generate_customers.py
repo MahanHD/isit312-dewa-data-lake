@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Generate synthetic customer records keyed by REAL London smart meter IDs.
+"""Generate Shared rules 8 customer records keyed by real London smart meter IDs.
 
 Usage from the repo root:
     python data/generate_customers.py --source full
     python data/generate_customers.py --source sample   # development only
 
+Dubai community, property type, and household size are synthetic assignments.
 No external dependencies. Never modifies the original readings.
 """
 
@@ -12,12 +13,15 @@ import argparse
 import csv
 import os
 from collections import Counter
+from hashlib import sha256
 from pathlib import Path
 import tempfile
 from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parent
-HEADER = ["customer_id", "meter_id", "tariff_type", "customer_name", "customer_segment", "is_synthetic"]
+HEADER = ["meter_id", "customer_id", "area", "property_type", "household_size"]
+AREAS = ("Al Barsha", "Deira", "Dubai Marina", "Jumeirah")
+PROPERTY_TYPES = ("apartment", "villa")
 
 
 def add_reading(meters: dict[str, str], raw_meter: bytes, raw_tariff: bytes, source: str, row_number: int) -> None:
@@ -80,9 +84,17 @@ def generate(source: str, zip_path: Path, sample_path: Path, output: Path) -> Co
         with os.fdopen(fd, "w", encoding="utf-8", newline="") as stream:
             writer = csv.writer(stream)
             writer.writerow(HEADER)
-            for i, (meter, tariff) in enumerate(sorted(meters.items()), 1):
-                cid = f"CUS{i:06d}"
-                writer.writerow([cid, meter, tariff, f"Synthetic Customer {i:06d}", "Residential", "true"])
+            for meter in sorted(meters):
+                # Each meter gets the same synthetic attributes in sample and full runs.
+                digest = sha256(meter.encode("utf-8")).digest()
+                writer.writerow([
+                    meter,
+                    f"CUS-{meter}",
+                    AREAS[digest[0] % len(AREAS)],
+                    PROPERTY_TYPES[digest[1] % len(PROPERTY_TYPES)],
+                    1 + digest[2] % 6,
+                ])
+        os.chmod(tmp, 0o644)
         os.replace(tmp, output)
     finally:
         if os.path.exists(tmp):

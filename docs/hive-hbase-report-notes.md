@@ -35,8 +35,7 @@ customer population and operational scale differ. Local wall-clock timestamps
 have DST ambiguity. Sample results cannot establish production performance.
 The single-node Docker stack lacks production availability and security controls.
 HBase refreshes are non-atomic upserts; absent keys persist and old exports must
-not overwrite newer states. Auxiliary Hive table schemas await the data/Spark
-team's agreed contracts. Company evaluation required by the specification remains
+not overwrite newer states. Company evaluation required by the specification remains
 a group responsibility; disclose if no direct company feedback was obtained.
 
 ## Suggested slides

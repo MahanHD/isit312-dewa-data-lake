@@ -31,6 +31,6 @@ Reports 1-5 returned no rows because the curated tables had no data yet.
 
 ## Still to do
 
-1. Add `dewa.tariffs`, `dewa.weather`, `dewa.bank_holidays`, `dewa.customers` once their columns are agreed.
+1. Check the four extra tables (tariffs, weather, bank_holidays, customers) return rows after `clean_sources.py` runs.
 2. Re-run on the real Spark output (cleaned and curated tables, `meter_status`) and on the full data.
 3. Save screenshots in `screenshots/hive/` and `screenshots/hbase/`.

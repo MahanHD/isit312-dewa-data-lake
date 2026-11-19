@@ -25,16 +25,12 @@ locations: inspect DESCRIBE FORMATTED before using an existing metastore. Changi
 DEWA_BASE does not relocate already-created tables. MSCK discovers new partitions;
 on Hive 2 it does not remove stale metastore partitions after Spark removes files.
 
-## Pending shared schemas
+## Extra tables
 
-The README names `dewa.tariffs`, `dewa.weather`, `dewa.bank_holidays`, and
-`dewa.customers` but supplies no column contracts for them. Their cleaned Parquet
-is not yet implemented on main. Do not guess column names/types or publish dummy
-tables: get each Spark output's `printSchema()` and agree join keys first. Then add
-external Parquet DDL at `${hivevar:base}/cleaned/<name>` (unpartitioned unless the
-team explicitly agrees otherwise). The five tables currently defined cover all
-fully specified Hive schemas. Auxiliary tables and their joins remain an explicit
-integration dependency, not a completed feature.
+`dewa.tariffs`, `dewa.weather`, `dewa.bank_holidays` and `dewa.customers` use the
+columns from Shared rules 8. They read the Parquet files that `spark/clean_sources.py`
+writes to `cleaned/<name>`. They're not partitioned, so no MSCK REPAIR needed.
+Hive matches Parquet columns by name, so a wrong column name gives NULLs, not an error.
 
 ## Evidence and interpretation
 

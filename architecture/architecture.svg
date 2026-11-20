@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1240" viewBox="0 0 1600 1240" font-family="Inter, Helvetica, Arial, sans-serif">
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#444"/></marker>
+  <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0f6b55"/></marker>
+  <marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b5531c"/></marker>
+  <style>
+    .src{fill:#f2efe8;stroke:#555;stroke-width:2.5}
+    .zone{fill:#e2f4ee;stroke:#0f6b55;stroke-width:2.5}
+    .srv{fill:#eeedfb;stroke:#4b3fb5;stroke-width:2.5}
+    .live{fill:#fcefe6;stroke:#b5531c;stroke-width:2.5}
+    .t{font-size:27px;font-weight:700;fill:#2a2a2a;text-anchor:middle}
+    .s{font-size:21px;fill:#555;text-anchor:middle}
+    .tz{font-size:27px;font-weight:700;fill:#0b4f3f;text-anchor:middle}
+    .sz{font-size:21px;fill:#0f6b55;text-anchor:middle}
+    .tv{font-size:27px;font-weight:700;fill:#3a2f96;text-anchor:middle}
+    .sv{font-size:21px;fill:#4b3fb5;text-anchor:middle}
+    .tl{font-size:27px;font-weight:700;fill:#8c3d12;text-anchor:middle}
+    .sl{font-size:21px;fill:#b5531c;text-anchor:middle}
+    .lbl{font-size:20px;fill:#0f6b55}
+    .lblo{font-size:20px;fill:#b5531c}
+    .ln{stroke:#444;stroke-width:2.5;fill:none}
+    .lg{stroke:#0f6b55;stroke-width:2.5;fill:none}
+    .lo{stroke:#b5531c;stroke-width:2.5;fill:none;stroke-dasharray:9 6}
+  </style>
+</defs>
+<rect width="1600" height="1240" fill="#ffffff"/>
+<rect class="src" x="40" y="30" width="280" height="110" rx="14"/><text class="t" x="180" y="78">Meter readings</text><text class="s" x="180" y="112">London, 168 CSV files</text>
+<rect class="src" x="350" y="30" width="280" height="110" rx="14"/><text class="t" x="490" y="78">Customer records</text><text class="s" x="490" y="112">Generated, one per meter</text>
+<rect class="src" x="660" y="30" width="280" height="110" rx="14"/><text class="t" x="800" y="78">Tariffs</text><text class="s" x="800" y="112">Price per time band</text>
+<rect class="src" x="970" y="30" width="280" height="110" rx="14"/><text class="t" x="1110" y="78">Weather, holidays</text><text class="s" x="1110" y="112">JSON, hourly and daily</text>
+<rect class="live" x="1280" y="30" width="280" height="110" rx="14"/><text class="tl" x="1420" y="78">Live meter feed</text><text class="sl" x="1420" y="112">Replayed, a file per day</text>
+<path class="ln" d="M180,140 V200" marker-end="url(#a)"/><path class="ln" d="M490,140 V200" marker-end="url(#a)"/><path class="ln" d="M800,140 V200" marker-end="url(#a)"/><path class="ln" d="M1110,140 V200" marker-end="url(#a)"/>
+<rect class="src" x="40" y="205" width="1210" height="95" rx="14"/><text class="t" x="645" y="246">Batch load into HDFS</text><text class="s" x="645" y="280">load_hdfs.sh: files copied unchanged into the raw zone</text>
+<rect x="20" y="340" width="1560" height="420" rx="18" fill="#f7f6f2" stroke="#888" stroke-width="2.5"/>
+<text x="845" y="388" font-size="27" font-weight="700" fill="#2a2a2a" text-anchor="middle">HDFS data lake (/dewa)</text>
+<rect class="zone" x="470" y="410" width="750" height="110" rx="14" fill="#ffffff"/>
+<text class="tz" x="845" y="452">Spark batch jobs</text>
+<text class="sz" x="845" y="488">clean_readings, clean_sources | aggregates, anomalies, meter_status</text>
+<rect class="zone" x="50" y="580" width="330" height="140" rx="14"/><text class="tz" x="215" y="630">Raw zone</text><text class="sz" x="215" y="664">Untouched copy</text><text class="sz" x="215" y="694">CSV, XLSX, JSON</text>
+<rect class="zone" x="470" y="580" width="330" height="140" rx="14"/><text class="tz" x="635" y="630">Cleaned zone</text><text class="sz" x="635" y="664">Typed, deduplicated</text><text class="sz" x="635" y="694">Parquet, by month</text>
+<rect class="zone" x="890" y="580" width="330" height="140" rx="14"/><text class="tz" x="1055" y="630">Curated zone</text><text class="sz" x="1055" y="664">Totals, peaks, anomalies,</text><text class="sz" x="1055" y="694">status per meter</text>
+<path class="lg" d="M380,650 H465" marker-end="url(#g)"/><text class="lbl" x="390" y="640">Spark</text>
+<path class="lg" d="M800,650 H885" marker-end="url(#g)"/><text class="lbl" x="810" y="640">Spark</text>
+<rect class="live" x="1280" y="410" width="280" height="110" rx="14"/><text class="tl" x="1420" y="455">Stream zone</text><text class="sl" x="1420" y="490">incoming files, alerts</text>
+<rect class="live" x="1280" y="580" width="280" height="140" rx="14"/><text class="tl" x="1420" y="620">Structured</text><text class="tl" x="1420" y="652">Streaming</text><text class="sl" x="1420" y="684">spike check per file,</text><text class="sl" x="1420" y="708">meter's own threshold</text>
+<path class="ln" d="M180,300 V575" marker-end="url(#a)"/>
+<path class="lo" d="M1420,140 V405" marker-end="url(#o)"/>
+<path class="lo" d="M1420,520 V575" marker-end="url(#o)"/>
+<path class="ln" d="M635,720 V800 H330 V845" marker-end="url(#a)"/>
+<path class="ln" d="M990,720 V815 H500 V845" marker-end="url(#a)"/>
+<path class="ln" d="M1130,720 V845" marker-end="url(#a)"/>
+<path class="lo" d="M1420,720 V1005" marker-end="url(#o)"/>
+<rect class="srv" x="140" y="850" width="560" height="125" rx="14"/><text class="tv" x="420" y="898">Hive</text><text class="sv" x="420" y="932">External tables, SQL reports,</text><text class="sv" x="420" y="960">joins with tariffs, weather, holidays</text>
+<rect class="srv" x="880" y="850" width="420" height="125" rx="14"/><text class="tv" x="1090" y="898">HBase</text><text class="sv" x="1090" y="932">Latest reading and alert</text><text class="sv" x="1090" y="960">per meter (ImportTsv load)</text>
+<path class="ln" d="M420,975 V1005" marker-end="url(#a)"/><path class="ln" d="M1090,975 V1005" marker-end="url(#a)"/>
+<rect class="src" x="140" y="1010" width="560" height="85" rx="14"/><text class="t" x="420" y="1062">Analysts and reports</text>
+<rect class="src" x="880" y="1010" width="420" height="85" rx="14"/><text class="t" x="1090" y="1062">Customer app lookups</text>
+<rect class="live" x="1330" y="1010" width="230" height="85" rx="14"/><text class="tl" x="1445" y="1062">Live alerts</text>
+<text x="800" y="1160" font-size="22" fill="#555" text-anchor="middle">run_pipeline.sh runs the batch path in order: load, Spark jobs, Hive tables and reports, HBase load.</text>
+<text x="800" y="1195" font-size="22" fill="#555" text-anchor="middle">HDFS 3.4.3, Spark 4.2.1, Hive 4.2.1, HBase 2.6.7, in containers. Dashed orange: live path.</text>
+</svg>

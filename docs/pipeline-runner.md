@@ -1,20 +1,20 @@
 # Run the DEWA batch
 
-Use a terminal in this checkout with the intended Compose stack already running and the checkout mounted at `/workspace`. Run the bundled readings sample first in its own project:
+Use a terminal in this checkout with the `dewa` Compose stack running and the checkout mounted at `/workspace`. The default command uses `--sample`.
 
 ```bash
 ./run_pipeline.sh
 ```
 
-The default project for `--sample` is `dewa-sample`. The runner uploads the sample into an empty raw readings folder or reuses the existing sample filename. For an existing stack, use the same project and Compose settings used to start it. For example:
+`--sample` uploads the bundled readings only when `/dewa/raw/readings` is empty. On a populated stack it reports reuse and processes the readings already there, including full data. All modes use Compose's project selection. The repository's `compose.yaml` names the project `dewa`. If the stack was started with a project override, use the same setting for the runner.
 
 ```bash
-COMPOSE_ENGINE=podman COMPOSE_PROJECT_NAME=dewa ./run_pipeline.sh --skip-load
+COMPOSE_ENGINE=podman ./run_pipeline.sh --skip-load
 ```
 
-`--skip-load` processes the current HDFS inputs directly. `--load` delegates to the append-only loader for prepared full inputs in `data/download/`. That loader can return zero after an intermediate ZIP member upload fails. Verify ingestion separately before relying on a new full load. Both options default to the stack's configured project.
+`--skip-load` processes the current HDFS inputs directly. `--load` delegates to the append-only loader for prepared full inputs in `data/download/` and stops if the sample readings file is already present.
 
-The runner tries Podman Compose, then Docker Compose, or uses the explicitly selected engine. Check the target before running: Spark rewrites its cleaned and curated outputs and HBase updates meter rows.
+The runner tries Podman Compose, then Docker Compose, or uses the explicitly selected engine. Even when raw readings are reused, Spark rewrites its cleaned and curated outputs, Hive updates table and partition metadata, and HBase updates meter rows.
 
 The five Spark jobs run in the order in `spark/README.md`. Missing `spark/aggregates.py` stops the batch with exit 3 before any service call. Extra sources are cleaned when present. Existing raw customers must already have the five-column schema in Shared rules 8; coordinate any old-file cutover separately.
 

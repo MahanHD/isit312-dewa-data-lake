@@ -68,18 +68,26 @@ if [ "$5 $6" = "-test -f" ]; then [ "$SAMPLE_TYPE" != directory ]; fi
                 self.assertEqual(self.calls()[-1], 'docker default ' + step)
                 self.assertIn(step, result.stderr)
 
-    def test_sample_upload_reuse_and_mixing_guards(self):
+    def test_sample_uses_configured_project_and_uploads_once_when_empty(self):
+        self.assertIn('name: dewa', (ROOT / 'compose.yaml').read_text().splitlines())
         result = self.invoke()
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('podman dewa-sample -T namenode hdfs dfs -put /workspace/data/sample/readings_sample.csv '
-                      + SAMPLE, self.calls())
-        self.assertNotIn(' -test -f ', self.log.read_text())
-        self.assertEqual(self.invoke('--sample', FILES=SAMPLE).returncode, 0)
-        self.assertIn(f'podman dewa-sample -T namenode hdfs dfs -test -f {SAMPLE}', self.calls())
-        self.assertNotIn(' -put ', self.log.read_text())
-        for mode, files in [('--sample', '/dewa/raw/readings/full.csv'), ('--load', SAMPLE)]:
-            self.assertEqual(self.invoke(mode, FILES=files).returncode, 1)
-            self.assertEqual(len(self.calls()), 2)
+        # The client records "default" when the runner leaves project selection to Compose.
+        self.assertTrue(all(call.startswith('podman default ') for call in self.calls()))
+        self.assertEqual([call for call in self.calls() if ' -put ' in call], [
+            f'podman default -T namenode hdfs dfs -put /workspace/data/sample/readings_sample.csv {SAMPLE}'])
+
+    def test_sample_reuses_a_populated_readings_directory(self):
+        full = '/dewa/raw/readings/full.csv'
+        for files in [full, SAMPLE, full + '\n' + SAMPLE]:
+            with self.subTest(files=files):
+                result = self.invoke('--sample', FILES=files)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn('Reusing existing readings', result.stdout)
+                self.assertNotIn(' -put ', self.log.read_text())
+                self.assertNotIn(LOADER, self.log.read_text())
+                self.assertEqual(f' -test -f {SAMPLE}' in self.log.read_text(), SAMPLE in files.splitlines())
+                self.assertEqual(self.calls()[-len(BATCH):], ['podman default ' + step for step in BATCH])
 
     def test_load_matches_whole_lines_even_with_broken_grep(self):
         grep = self.root / 'grep'
@@ -93,10 +101,12 @@ if [ "$5 $6" = "-test -f" ]; then [ "$SAMPLE_TYPE" != directory ]; fi
                 self.assertEqual('podman default ' + LOADER in self.calls(), expected == 0)
 
     def test_directory_named_like_sample_stops_before_spark(self):
-        result = self.invoke('--sample', FILES=SAMPLE, SAMPLE_TYPE='directory')
-        self.assertEqual(result.returncode, 1)
-        self.assertIn('regular file', result.stderr)
-        self.assertEqual(self.calls()[-1], f'podman dewa-sample -T namenode hdfs dfs -test -f {SAMPLE}')
+        for files in [SAMPLE, SAMPLE + '\n/dewa/raw/readings/full.csv']:
+            with self.subTest(files=files):
+                result = self.invoke('--sample', FILES=files, SAMPLE_TYPE='directory')
+                self.assertEqual(result.returncode, 1)
+                self.assertIn('regular file', result.stderr)
+                self.assertEqual(self.calls()[-1], f'podman default -T namenode hdfs dfs -test -f {SAMPLE}')
 
     def test_failed_listing_stops_both_load_modes(self):
         listing = '-T namenode hdfs dfs -ls -C /dewa/raw/readings'

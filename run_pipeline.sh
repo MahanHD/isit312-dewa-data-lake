@@ -6,8 +6,7 @@ usage() { echo "Usage: ./run_pipeline.sh [--sample | --skip-load | --load]"; }
 if (( $# > 1 )); then usage >&2; exit 2; fi
 mode=${1---sample}
 case "$mode" in
-  --sample) export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-dewa-sample} ;;
-  --skip-load|--load) ;;
+  --sample|--skip-load|--load) ;;
   -h|--help) usage; exit 0 ;;
   *) usage >&2; exit 2 ;;
 esac
@@ -39,24 +38,23 @@ if [[ $mode != --skip-load ]]; then
   dfs -mkdir -p "$readings"
   files=$(dfs -ls -C "$readings")
   sample=$readings/readings_sample.csv
-  if [[ $mode == --sample ]]; then
-    case "$files" in
-      '') dfs -put /workspace/data/sample/readings_sample.csv "$sample" ;;
-      "$sample")
-        dfs -test -f "$sample" || {
-          status=$?
-          echo "Cannot verify $sample is a regular file. Check the sample project." >&2
-          exit "$status"
-        }
-        echo "Reusing $sample" ;;
-      *) echo "Sample needs its own readings directory. Check the Compose project." >&2; exit 1 ;;
-    esac
-  else
-    # Pad the listing with newlines so the path must match one complete entry.
-    if [[ $'\n'"$files"$'\n' == *$'\n'"$sample"$'\n'* ]]; then
-      echo "Sample readings present. Select the full-data project before loading." >&2; exit 1
+  # Pad the listing with newlines so the path must match one complete entry.
+  if [[ $'\n'"$files"$'\n' == *$'\n'"$sample"$'\n'* ]]; then
+    if [[ $mode == --load ]]; then
+      echo "Sample readings present. Use --skip-load to process the existing readings." >&2; exit 1
     fi
+    dfs -test -f "$sample" || {
+      status=$?
+      echo "Cannot verify $sample is a regular file." >&2
+      exit "$status"
+    }
+  fi
+  if [[ $mode == --load ]]; then
     run -T namenode bash /workspace/data/load_hdfs.sh
+  elif [[ -z $files ]]; then
+    dfs -put /workspace/data/sample/readings_sample.csv "$sample"
+  else
+    echo "Reusing existing readings in $readings for this batch. No sample uploaded."
   fi
 fi
 

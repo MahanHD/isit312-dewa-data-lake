@@ -19,7 +19,8 @@ while read -r member; do
   if exists "$dest"; then echo "skip $member"; continue; fi
   echo "put  $member"
   python3 -I -c 'import sys, zipfile, shutil; shutil.copyfileobj(zipfile.ZipFile("lcl_partitioned.zip").open(sys.argv[1]), sys.stdout.buffer)' "$member" |
-    hdfs dfs -put - "$dest._COPYING_" && hdfs dfs -mv "$dest._COPYING_" "$dest"
+    # exit explicitly: a failure inside this piped loop would otherwise be skipped and the script would still succeed
+    hdfs dfs -put - "$dest._COPYING_" && hdfs dfs -mv "$dest._COPYING_" "$dest" || exit 1
 done
 
 put Tariffs.xlsx "$BASE/raw/tariffs"

@@ -12,6 +12,7 @@ base="${DEWA_BASE:-/dewa}"
 [[ "$report_month" =~ ^[0-9]{4}-(0[1-9]|1[0-2])$ ]] || { echo 'Invalid month' >&2; exit 2; }
 [[ "$base" =~ ^/[a-zA-Z0-9_/-]+$ && "$base" != / ]] || { echo 'Invalid DEWA_BASE' >&2; exit 2; }
 # -e avoids the repository's documented Beeline -f terminal issue.
+sql="$(cat "$1")"   # own line, so an unreadable file stops the script instead of running an empty query
 exec beeline -u "${HIVE_JDBC_URL:-jdbc:hive2://localhost:10000}" \
   --force=false --silent=true --showHeader=true \
-  --hivevar base="$base" --hivevar report_month="$report_month" -e "$(cat "$1")"
+  --hivevar base="$base" --hivevar report_month="$report_month" -e "$sql"

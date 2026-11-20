@@ -64,6 +64,7 @@ architecture/   diagrams and design notes                  Architecture + DEWA r
 docs/           report notes, references, meeting notes    Architecture + DEWA research
 data/           download, sample and HDFS load scripts     Data prep
 spark/          Spark jobs + template                      Spark
+mapreduce/      MapReduce vs Spark timing on the same job  Spark
 hive/           .hql files + run.sh                        Hive + HBase
 hbase/          HBase table and load scripts               Hive + HBase
 screenshots/    evidence for the report, one folder per part

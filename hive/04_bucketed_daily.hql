@@ -11,6 +11,9 @@ STORED AS PARQUET LOCATION '${hivevar:base}/hive/daily_usage_bucketed';
 
 -- Hive 2.1 needs nonstrict mode when every partition column is dynamic.
 SET hive.exec.dynamic.partition.mode=nonstrict;
+-- 28 months x 8 buckets is more than the default 100 dynamic partitions per node.
+SET hive.exec.max.dynamic.partitions=1000;
+SET hive.exec.max.dynamic.partitions.pernode=1000;
 -- Only months present in the source are replaced in the demo table.
 INSERT OVERWRITE TABLE dewa.daily_usage_bucketed PARTITION (reading_month)
 SELECT meter_id, reading_date, kwh_total, peak_kwh, peak_ts, readings, reading_month

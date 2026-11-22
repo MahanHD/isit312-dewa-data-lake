@@ -18,4 +18,4 @@ The runner tries Podman Compose, then Docker Compose, or uses the explicitly sel
 
 The five Spark jobs run in the order in `spark/README.md`. Missing `spark/aggregates.py` stops the batch with exit 3 before any service call. Extra sources are cleaned when present. Existing raw customers must already have the five-column schema in Shared rules 8; coordinate any old-file cutover separately.
 
-Hive creates the external tables, repairs the four monthly partitioned tables, and prints the six reports for the wrapper's default month (2013-01). Keep the terminal attached for Beeline and screenshots. HBase then validates and imports the meter-status CSV. Each command is printed before execution; a failed stage returns its exit code and stops the batch.
+Hive creates the external tables, repairs the four monthly partitioned tables, and prints the reports in `hive/02_reports.hql` for the wrapper's default month (2013-01). Keep the terminal attached for Beeline and screenshots. HBase then validates and imports the meter-status CSV. Each command is printed before execution; a failed stage returns its exit code and stops the batch.

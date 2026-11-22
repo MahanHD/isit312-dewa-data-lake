@@ -2,9 +2,10 @@
 
 ## Automated checks
 
-- `python -m unittest discover -s tests -v`: 17 tests pass. Ten check the scripts with fake clients (argument
-  forwarding, month/base validation, OK and ALERT rows, malformed export rejection, failure propagation). Seven run
-  the six report SELECTs on SQLite fixtures (calculation check only, not Hive execution).
+- `python -m unittest discover -s tests -v`: all tests pass. For Hive and HBase, `tests/test_hive_hbase_scripts.py`
+  checks the scripts with fake clients (argument forwarding, month/base validation, OK and ALERT rows, malformed
+  export rejection, failure propagation) and `tests/test_hive_reports.py` runs the report SELECTs on SQLite fixtures
+  (calculation check only, not Hive execution).
 - `bash -n hive/run.sh hbase/02_load.sh`, `docker compose config --quiet`.
 
 HBase 2.6.7 source review: ImportTsv keeps a trailing empty field and writes empty values when

@@ -9,6 +9,8 @@ docker compose exec hive bash /workspace/hive/run.sh hive/03_refresh_partitions.
 docker compose exec hive bash /workspace/hive/run.sh hive/02_reports.hql 2013-01
 ```
 
+`hive/04_bucketed_daily.hql` is a standalone bucketing demo run separately from the normal batch pipeline.
+
 Choose a month present in `SHOW PARTITIONS dewa.daily_usage;`. Empty results before
 Spark runs are expected and do not prove that the integration works. Raw readings
 can be queried immediately after loading the repository sample. The four raw CSV

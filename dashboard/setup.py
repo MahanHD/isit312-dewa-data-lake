@@ -88,7 +88,9 @@ def setup_interpreter(jar):
         sys.exit("Zeppelin did not start, so the jdbc interpreter was not set up")
     jdbc = next(s for s in settings if s["name"] == "jdbc")
     values = {"default.url": "jdbc:hive2://hive:10000/dewa?hive.server2.in.place.progress=false", "default.driver": "org.apache.hive.jdbc.HiveDriver",
-              "default.user": "hive", "default.password": ""}
+              "default.user": "hive", "default.password": "",
+              # one query at a time, or Hive log lines from parallel reports get mixed into the result tables
+              "zeppelin.jdbc.concurrent.use": "false"}
     for name, value in values.items():
         jdbc["properties"].setdefault(name, {"name": name, "type": "string"})["value"] = value
     jdbc["dependencies"] = [{"groupArtifactVersion": jar, "local": False}]

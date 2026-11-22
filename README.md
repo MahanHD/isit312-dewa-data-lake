@@ -225,8 +225,15 @@ python data/convert_tariffs.py
 
 # 1. Load into HDFS raw (streams the CSVs out of the zip; re-running skips loaded files)
 docker compose exec namenode bash /workspace/data/load_hdfs.sh
-#    ...or just the sample:
+# For a batch run, ./run_pipeline.sh --sample reuses existing readings, which may be full data.
+# For a manual sample upload, inspect the destination first:
 docker compose exec namenode hdfs dfs -mkdir -p /dewa/raw/readings
+docker compose exec namenode hdfs dfs -ls -C /dewa/raw/readings
+```
+
+Run the sample upload below only if the listing succeeded and showed an empty directory.
+
+```bash
 docker compose exec namenode hdfs dfs -put /workspace/data/sample/readings_sample.csv /dewa/raw/readings/
 
 # 2. Spark (job order in spark/README.md)
@@ -234,6 +241,7 @@ docker compose exec spark spark-submit spark/<job>.py
 
 # 3. Hive
 docker compose exec hive bash /workspace/hive/run.sh hive/01_create_tables.hql
+docker compose exec hive bash /workspace/hive/run.sh hive/03_refresh_partitions.hql
 docker compose exec hive bash /workspace/hive/run.sh hive/02_reports.hql
 docker compose exec hive beeline -u jdbc:hive2://localhost:10000        # interactive
 

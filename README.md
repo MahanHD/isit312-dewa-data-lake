@@ -114,6 +114,7 @@ Base folder **`/dewa`** (`$DEWA_BASE` in scripts, `${hivevar:base}` in Hive). Us
 | cleaned | `/dewa/cleaned/<source>/` | tariffs, weather, bank_holidays, customers | Parquet |
 | curated | `/dewa/curated/<table>/reading_month=YYYY-MM/` | `hourly_usage`, `daily_usage`, `anomalies` | Parquet |
 | curated | `/dewa/curated/meter_status/` | latest reading + alert per meter, for HBase | CSV, no header |
+| hive | `/dewa/hive/` | Hive writes the `daily_usage_bucketed/` demo here, partitioned by `reading_month` and bucketed by `meter_id` | Parquet |
 | stream | `/dewa/stream/incoming/` | replayed readings for the live demo, one file per day, raw columns (Shared rules 2) | CSV with header |
 | stream | `/dewa/stream/alerts/` | spikes found by the stream: `meter_id, reading_ts, kwh, threshold, detected_at` | Parquet |
 

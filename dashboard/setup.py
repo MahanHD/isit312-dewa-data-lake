@@ -87,7 +87,7 @@ def setup_interpreter(jar):
     else:
         sys.exit("Zeppelin did not start, so the jdbc interpreter was not set up")
     jdbc = next(s for s in settings if s["name"] == "jdbc")
-    values = {"default.url": "jdbc:hive2://hive:10000/dewa", "default.driver": "org.apache.hive.jdbc.HiveDriver",
+    values = {"default.url": "jdbc:hive2://hive:10000/dewa?hive.server2.in.place.progress=false", "default.driver": "org.apache.hive.jdbc.HiveDriver",
               "default.user": "hive", "default.password": ""}
     for name, value in values.items():
         jdbc["properties"].setdefault(name, {"name": name, "type": "string"})["value"] = value

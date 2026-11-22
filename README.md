@@ -88,6 +88,7 @@ HBase 2.6.7, Spark 4.2.1 (PySpark).
 
 3. Web UIs: HDFS http://localhost:9870, Hive http://localhost:10002, HBase http://localhost:16010,
    Spark http://localhost:4040 (while a job runs).
+4. Demo dashboard (only when needed): see [`dashboard/README.md`](dashboard/README.md).
 
 - The repo is mounted at `/workspace` in every container: edit on your machine, run inside the containers.
 - `docker compose stop` / `down` keep all data. `docker compose down -v` **deletes HDFS, Hive and HBase data**.

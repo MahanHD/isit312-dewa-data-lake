@@ -73,6 +73,18 @@ services:
       - ".:/workspace:z"
     depends_on: [namenode, datanode]
 
+  zeppelin:
+    image: docker.io/apache/zeppelin:0.12.1
+    profiles: [dashboard]
+    hostname: zeppelin
+    command: ["bash", "/workspace/dashboard/start.sh"]
+    environment:
+      ZEPPELIN_MEM: -Xmx512m
+      ZEPPELIN_INTP_MEM: -Xmx512m
+    ports: ["8080:8080"]
+    volumes: [".:/workspace:z"]
+    depends_on: [hive]
+
 volumes:
   namenode:
   datanode:

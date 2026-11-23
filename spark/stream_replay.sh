@@ -32,7 +32,7 @@ PY
 hdfs dfs -mkdir -p "$BASE/stream/incoming" "$BASE/stream/_staging"
 for f in "$WORK"/readings_*.csv; do
   # put to staging, then move: the stream must only ever see complete files
-  hdfs dfs -put -f "$f" "$BASE/stream/_staging/" && hdfs dfs -mv "$BASE/stream/_staging/$(basename "$f")" "$BASE/stream/incoming/"
+  hdfs dfs -put -f "$f" "$BASE/stream/_staging/" && hdfs dfs -mv "$BASE/stream/_staging/$(basename "$f")" "$BASE/stream/incoming/" || exit 1
   echo "sent $(basename "$f") ($(($(wc -l < "$f") - 1)) readings)"
   sleep "$EVERY"
 done

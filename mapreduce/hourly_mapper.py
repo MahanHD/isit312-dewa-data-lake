@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Map: one raw reading -> "meter_id <TAB> hour_ts <TAB> kwh <TAB> 1". Same rules as Shared rules 3."""
+"""Map: one raw reading -> "meter_id <TAB> hour_ts <TAB> kwh <TAB> 1". Drops null and negative kWh, keeps duplicates."""
 import re
 import sys
 

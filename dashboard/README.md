@@ -20,6 +20,9 @@ docker compose stop zeppelin                          # frees the memory again a
 - The driver is version 4.0.1, not 4.2.1: Zeppelin runs on Java 11 and the 4.2.x driver needs Java 21. Older drivers
   can talk to a newer HiveServer2, but check this first if the connection fails.
 - Hive and the tables need to be up first (`hive/01_create_tables.hql`, `hive/03_refresh_partitions.hql`).
+- The new Zeppelin page leaves out some labels on bar charts with few bars (reports 7 and 9). The classic page shows
+  them: http://localhost:8080/classic/#/notebook/2MDEWA001. Use the new page for report 8, whose line is drawn out of
+  order on the classic one. Charts with more than 1,000 rows (reports 1 and 13) are cut off by Zeppelin.
 - Zeppelin and its interpreter are capped at 512 MB of Java heap each.
 - If a report shows "interpreter not found" or a connection error, check `docker compose logs zeppelin` for the
   line `jdbc interpreter now points at Hive`.

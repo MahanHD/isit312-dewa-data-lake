@@ -8,13 +8,14 @@ REPORTS = Path("/workspace/hive/02_reports.hql")
 NOTEBOOK = Path("/opt/zeppelin/notebook/DEWA dashboard_2MDEWA001.zpln")
 API = "http://localhost:8080/api/interpreter/setting"
 
+# chart, then (column name, position) of the key and of the values; Zeppelin ignores a column whose name is wrong
 CHARTS = {
-    1: ("multiBarChart", 0, [2]),
-    3: ("lineChart", 0, [1]),
-    7: ("multiBarChart", 0, [3, 4]),
-    8: ("lineChart", 0, [1]),
-    9: ("multiBarChart", 0, [1]),
-    13: ("multiBarChart", 1, [4]),
+    1: ("multiBarChart", ("meter_id", 0), [("monthly_kwh", 2)]),
+    3: ("lineChart", ("hour_of_day", 0), [("total_kwh", 1)]),
+    7: ("multiBarChart", ("price_band", 0), [("cost_gbp", 3), ("std_cost_gbp", 4)]),
+    8: ("lineChart", ("temp_from_c", 0), [("avg_kwh", 1)]),
+    9: ("multiBarChart", ("day_type", 0), [("avg_daily_kwh", 1)]),
+    13: ("multiBarChart", ("meter_id", 1), [("share_pct", 4)]),
 }
 
 
@@ -36,8 +37,8 @@ def graph(number):
     mode, key, values = CHARTS[number]
     return {
         "mode": mode, "height": 300.0, "optionOpen": False,
-        "keys": [{"name": "", "index": key, "aggr": "sum"}],
-        "values": [{"name": "", "index": v, "aggr": "sum"} for v in values],
+        "keys": [{"name": key[0], "index": key[1], "aggr": "sum"}],
+        "values": [{"name": name, "index": index, "aggr": "sum"} for name, index in values],
         "groups": [],
     }
 

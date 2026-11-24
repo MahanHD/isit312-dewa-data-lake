@@ -3,7 +3,7 @@
 
 Usage from the repo root:
     python data/generate_customers.py --source full
-    python data/generate_customers.py --source sample   # development only
+    python data/generate_customers.py --source sample --output data/download/customers_sample.csv   # development only
 
 Dubai community, property type, and household size are synthetic assignments.
 No external dependencies. Never modifies the original readings.

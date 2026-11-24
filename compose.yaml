@@ -53,6 +53,8 @@ services:
     build: docker/hbase
     image: localhost/dewa-hbase:2.6.7
     hostname: hbase
+    # HBase gives up for good if the NameNode is not listening yet (a fresh start on a slow machine), so wait for it
+    command: ["bash", "-c", "until (: </dev/tcp/namenode/8020) 2>/dev/null; do sleep 2; done; exec hbase master start"]
     ports: ["16010:16010"]
     volumes: [hbase-zk:/data/zk, "./docker/conf/core-site.xml:/opt/hbase/conf/core-site.xml:ro,z", ".:/workspace:z"]
     depends_on: [namenode, datanode]

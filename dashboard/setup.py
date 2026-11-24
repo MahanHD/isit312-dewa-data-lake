@@ -48,8 +48,8 @@ def paragraph(number, title, text, interpreter="jdbc"):
         "title": title,
         "text": f"%{interpreter}\n{text}",
         "config": {"title": True, "colWidth": 12.0, "editorHide": interpreter == "md",
-                   "editorSetting": {"language": "sql" if interpreter == "jdbc" else "markdown"},
-                   "results": {"0": {"graph": graph(number)}} if interpreter == "jdbc" else {}},
+                   "editorSetting": {"language": "markdown" if interpreter == "md" else "sql"},
+                   "results": {"0": {"graph": graph(number)}} if interpreter != "md" else {}},
         "settings": {"params": {}, "forms": {}},
         "status": "READY",
     }
@@ -60,7 +60,9 @@ def make_notebook():
              "Reports from `hive/02_reports.hql`, run on Hive. Pick a month at the top, then Run all.")
     paragraphs = [paragraph(0, "About", intro, "md")]
     for number, title, sql in reports():
-        paragraphs.append(paragraph(number, title, sql.replace("${hivevar:report_month}", "$${month=2013-01}")))
+        # without displayLog=false Hive's log is the first output and the chart settings land on it, not on the table
+        paragraphs.append(paragraph(number, title, sql.replace("${hivevar:report_month}", "$${month=2013-01}"),
+                                    "jdbc(displayLog=false)"))
     note = {"id": "2MDEWA001", "name": "DEWA dashboard", "defaultInterpreterGroup": "jdbc",
             "paragraphs": paragraphs, "config": {}, "info": {}, "noteParams": {}, "noteForms": {},
             "angularObjects": {}}

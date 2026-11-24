@@ -1,8 +1,8 @@
 # MapReduce vs Spark
 
 The report argues MapReduce is too slow for this workload. This folder measures it: the same job (hourly kWh per
-meter from `raw/readings`, with the Shared rules 3 cleaning rules) written as a Hadoop streaming job in Python, as
-in Lab 3, and in Spark.
+meter from `raw/readings`, dropping null and negative readings but keeping duplicates) written as a Hadoop streaming
+job in Python, as in Lab 3, and in Spark.
 
 | File | What it is |
 |---|---|
@@ -35,3 +35,8 @@ A first run gave one extra row: an hour whose two readings were split across two
 The combiner's output is re-read with the reduce key setting, which defaults to one field, so after combining the
 key was only `meter_id` and the two halves were no longer sorted next to each other.
 `stream.num.reduce.output.key.fields=2` fixes it.
+
+On 25 Nov the job ran out of memory, because in local mode the 8 reducers share one 4 GB heap and each one may fill
+70% of it during the shuffle. `mapreduce.reduce.shuffle.input.buffer.percent=0.08` gives each its share. With that
+setting a second run took 237 s in MapReduce and 94 s in Spark, again with the same output
+(`screenshots/mapreduce/01-mapreduce-vs-spark.png`). Times vary between runs; the table above is the first run.

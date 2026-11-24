@@ -28,6 +28,11 @@ Every part is built and has run on the full data (one laptop, about 9 minutes fr
 | Hourly / daily totals | 83,925,571 / 3,510,403 rows, both adding up to every cleaned reading |
 | Meters in HBase | 5,561 |
 
+One of the 13 Hive reports in the dashboard: what time-of-use homes paid in January 2013 (dark) against the flat price
+(light), per price band.
+
+![Cost per price band](screenshots/dashboard/01-report-7-cost-per-band.png)
+
 To reproduce it on the sample, set up the stack and run `./run_pipeline.sh` (see
 [`docs/pipeline-runner.md`](docs/pipeline-runner.md)).
 
@@ -49,11 +54,10 @@ DEWA does not publish per-meter readings, so we use a real public dataset as a s
 > 5,567 homes, half-hourly electricity readings, Nov 2011 - Feb 2014, ~167M rows, 8.5 GB of CSV in 168 files.
 > CC BY 4.0. https://data.london.gov.uk/dataset/smartmeter-energy-consumption-data-in-london-households-vqm0d
 
-```
-source files --> HDFS data lake --------------------------------> Spark ----------------> Hive (reporting)
-                 raw (as downloaded) -> cleaned -> curated        cleaning, hourly/daily   HBase (latest reading
-                                                                  totals, peaks, anomalies  + alert per meter)
-```
+![Data lake architecture](architecture/architecture.png)
+
+Raw files stay as downloaded, Spark cleans them and builds the curated tables, Hive serves the reports and HBase the
+latest reading and alert per meter. More in [`architecture/README.md`](architecture/README.md).
 
 Extra sources: tariffs (Excel, same London Datastore page), London weather (JSON), UK bank holidays (JSON),
 generated customer records.

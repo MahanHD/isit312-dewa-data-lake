@@ -11,25 +11,25 @@ Electricity and Water Authority)** smart meter data and build a working version 
 
 | Part | Read | Make | Branch | Done when |
 |---|---|---|---|---|
-| Architecture + DEWA research | [About the project](#about-the-project), Shared rules 1 | diagrams in `architecture/` (`.drawio` + `.png`), notes in `docs/` | `architecture/<topic>` | the diagrams show every zone, tool and data flow in this README, and the notes cover DEWA's current setup and why we chose (or didn't choose) each tool |
+| Architecture + DEWA research | [About the project](#about-the-project), Shared rules 1 | diagrams in `architecture/` (`.svg` / `.uxf` + `.png`), write-up in the report | `architecture/<topic>` | the diagrams show every zone, tool and data flow in this README, and the write-up covers DEWA's current setup and why we chose (or didn't choose) each tool |
 | Data prep | Shared rules 1, 2, 8, How to run 0-1 | `data/generate_customers.py`, `data/convert_tariffs.py` | `data/<topic>` | the scripts write `customers.csv` and `tariffs.csv` into `data/download/`, and `load_hdfs.sh` puts them in `/dewa/raw/` |
 | Spark | Shared rules 1-5, 8, [`spark/README.md`](spark/README.md) | `spark/*.py`, copied from `spark/_template.py` | `spark/<topic>` | each job runs on the sample and the full data, and its output matches the paths and schemas in Shared rules 1, 3 and 4 |
 | Hive + HBase | Shared rules 1, 3, 4, 6-8 | `hive/01_create_tables.hql`, `hive/02_reports.hql`, `hive/03_refresh_partitions.hql`, `hbase/01_create_table.rb`, `hbase/02_load.sh` | `hive/<topic>`, `hbase/<topic>` | the Hive tables read the Spark output, the report queries return results, and `get 'dewa_meter_status', 'MAC000016'` returns a row |
 
 Data prep commits the **scripts only**. The files they produce stay in `data/download/`, which git ignores.
 
-### Open tasks
+### Status
 
-| Task | Part | Output | Due |
-|---|---|---|---|
-| Customers file in the Shared rules 8 columns (no names), then regenerate | Hive + HBase, helping data prep | `data/generate_customers.py` | Thu 19 |
-| The four extra Hive tables (Shared rules 8) | Hive + HBase | `hive/01_create_tables.hql` | Thu 19 |
-| Reports that use the extra tables (tariff cost, weather, holidays) | Hive + HBase | `hive/02_reports.hql` | Fri 20 |
-| One script that runs the whole pipeline in order and checks each step | Hive + HBase | `run_pipeline.sh` | Fri 20 |
-| Demo dashboard on top of Hive, started only for the demo | Hive + HBase | `compose.yaml` profile + `dashboard/` | Fri 20 |
-| Review pass: bugs, contradictions, unclear code or docs (no logic changes, tests still pass) | Hive + HBase | small PRs | Fri 20 |
-| Hourly and daily totals with peaks | Spark | `spark/aggregates.py` | Fri 20 |
-| Full run on the full data + screenshots | everyone | `screenshots/` | Sat 21 |
+Every part is built and has run on the full data (one laptop, about 9 minutes from the raw zone to HBase):
+
+| Output | Full data |
+|---|---|
+| Raw rows / cleaned readings | 167,932,474 / 167,811,461 |
+| Hourly / daily totals | 83,925,571 / 3,510,403 rows, both adding up to every cleaned reading |
+| Meters in HBase | 5,561 |
+
+To reproduce it on the sample, set up the stack and run `./run_pipeline.sh` (see
+[`docs/pipeline-runner.md`](docs/pipeline-runner.md)).
 
 ### Git in 5 commands
 
@@ -60,13 +60,16 @@ generated customer records.
 
 ```
 compose.yaml    the whole stack in containers (+ docker/ for its config and the HBase image)
-architecture/   diagrams and design notes                  Architecture + DEWA research
-docs/           report notes, references, meeting notes    Architecture + DEWA research
+run_pipeline.sh runs the whole batch in order              Hive + HBase
+architecture/   diagrams                                   Architecture + DEWA research
+docs/           pipeline runner guide, Hive + HBase notes  Hive + HBase
 data/           download, sample and HDFS load scripts     Data prep
 spark/          Spark jobs + template                      Spark
 mapreduce/      MapReduce vs Spark timing on the same job  Spark
 hive/           .hql files + run.sh                        Hive + HBase
 hbase/          HBase table and load scripts               Hive + HBase
+dashboard/      Zeppelin dashboard on Hive (demo only)     Hive + HBase
+tests/          unit tests: python3 -m unittest discover -s tests
 screenshots/    evidence for the report, one folder per part
 ```
 

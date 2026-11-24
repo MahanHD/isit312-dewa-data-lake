@@ -8,13 +8,14 @@ REPORTS = Path("/workspace/hive/02_reports.hql")
 NOTEBOOK = Path("/opt/zeppelin/notebook/DEWA dashboard_2MDEWA001.zpln")
 API = "http://localhost:8080/api/interpreter/setting"
 
+# chart, then (column name, position) of the key and of the values; Zeppelin ignores a column whose name is wrong
 CHARTS = {
-    1: ("multiBarChart", 0, [2]),
-    3: ("lineChart", 0, [1]),
-    7: ("multiBarChart", 0, [3, 4]),
-    8: ("lineChart", 0, [1]),
-    9: ("multiBarChart", 0, [1]),
-    13: ("multiBarChart", 1, [4]),
+    1: ("multiBarChart", ("meter_id", 0), [("monthly_kwh", 2)]),
+    3: ("lineChart", ("hour_of_day", 0), [("total_kwh", 1)]),
+    7: ("multiBarChart", ("price_band", 0), [("cost_gbp", 3), ("std_cost_gbp", 4)]),
+    8: ("lineChart", ("temp_from_c", 0), [("avg_kwh", 1)]),
+    9: ("multiBarChart", ("day_type", 0), [("avg_daily_kwh", 1)]),
+    13: ("multiBarChart", ("meter_id", 1), [("share_pct", 4)]),
 }
 
 
@@ -36,8 +37,8 @@ def graph(number):
     mode, key, values = CHARTS[number]
     return {
         "mode": mode, "height": 300.0, "optionOpen": False,
-        "keys": [{"name": "", "index": key, "aggr": "sum"}],
-        "values": [{"name": "", "index": v, "aggr": "sum"} for v in values],
+        "keys": [{"name": key[0], "index": key[1], "aggr": "sum"}],
+        "values": [{"name": name, "index": index, "aggr": "sum"} for name, index in values],
         "groups": [],
     }
 
@@ -48,8 +49,8 @@ def paragraph(number, title, text, interpreter="jdbc"):
         "title": title,
         "text": f"%{interpreter}\n{text}",
         "config": {"title": True, "colWidth": 12.0, "editorHide": interpreter == "md",
-                   "editorSetting": {"language": "sql" if interpreter == "jdbc" else "markdown"},
-                   "results": {"0": {"graph": graph(number)}} if interpreter == "jdbc" else {}},
+                   "editorSetting": {"language": "markdown" if interpreter == "md" else "sql"},
+                   "results": {"0": {"graph": graph(number)}} if interpreter != "md" else {}},
         "settings": {"params": {}, "forms": {}},
         "status": "READY",
     }
@@ -60,7 +61,9 @@ def make_notebook():
              "Reports from `hive/02_reports.hql`, run on Hive. Pick a month at the top, then Run all.")
     paragraphs = [paragraph(0, "About", intro, "md")]
     for number, title, sql in reports():
-        paragraphs.append(paragraph(number, title, sql.replace("${hivevar:report_month}", "$${month=2013-01}")))
+        # without displayLog=false Hive's log is the first output and the chart settings land on it, not on the table
+        paragraphs.append(paragraph(number, title, sql.replace("${hivevar:report_month}", "$${month=2013-01}"),
+                                    "jdbc(displayLog=false)"))
     note = {"id": "2MDEWA001", "name": "DEWA dashboard", "defaultInterpreterGroup": "jdbc",
             "paragraphs": paragraphs, "config": {}, "info": {}, "noteParams": {}, "noteForms": {},
             "angularObjects": {}}

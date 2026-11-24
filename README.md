@@ -62,7 +62,7 @@ generated customer records.
 compose.yaml    the whole stack in containers (+ docker/ for its config and the HBase image)
 run_pipeline.sh runs the whole batch in order              Hive + HBase
 architecture/   diagrams                                   Architecture + DEWA research
-docs/           pipeline runner guide, Hive + HBase notes  Hive + HBase
+docs/           pipeline runner guide, validation results  Hive + HBase
 data/           download, sample and HDFS load scripts     Data prep
 spark/          Spark jobs + template                      Spark
 mapreduce/      MapReduce vs Spark timing on the same job  Spark

@@ -4,7 +4,7 @@ Run from the repository root with the stack running:
 
 ```bash
 docker compose exec hive bash /workspace/hive/run.sh hive/01_create_tables.hql
-# After the Spark teammate has produced cleaned/curated Parquet:
+# After the Spark jobs have written cleaned/curated Parquet:
 docker compose exec hive bash /workspace/hive/run.sh hive/03_refresh_partitions.hql
 docker compose exec hive bash /workspace/hive/run.sh hive/02_reports.hql 2013-01
 ```
@@ -38,11 +38,9 @@ Hive matches Parquet columns by name, so a wrong column name gives NULLs, not an
 
 ## Evidence and interpretation
 
-Capture real output under screenshots/hive/: table list and DESCRIBE FORMATTED,
-raw sample rows, SHOW PARTITIONS, reports for a populated month, and EXPLAIN for a
-month-filtered query. Compare report 6's cleaned kWh sum with report 1's monthly
-sum (allow floating-point rounding). Record row counts, month, data scope and
-execution time; the five-household sample does not establish full-scale performance.
+Measured results are in `docs/hive-hbase-validation.md`. Report 6's cleaned kWh sum
+should match report 1's monthly sum (allow floating-point rounding).
+The five-household sample does not establish full-scale performance.
 
 Missing readings are coverage indicators, not confirmed meter failures. A day with
 no records is absent from daily_usage and is not detected by report 5. London

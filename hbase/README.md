@@ -42,6 +42,5 @@ not the event timestamp stored as text. Concurrent imports are unsupported.
 
 The ALERT scan is a demonstration and scans rows; the primary efficient access
 pattern is `get` by meter ID. It is not a secondary index or a streaming pipeline.
-The sample verification ID may need changing. Capture describe, get, and an alert
-scan under screenshots/hbase/. Also verify an ALERT -> OK update clears a:type and
-a:ts before declaring integration complete. Keep fixture evidence clearly labelled.
+The sample verification ID may need changing. The checks done, including that an
+ALERT -> OK update clears a:type and a:ts, are in `docs/hive-hbase-validation.md`.

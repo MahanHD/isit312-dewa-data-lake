@@ -28,10 +28,21 @@ separate base folder (`DEWA_BASE=/dewa_check`) and Spark output built from the s
 | Malformed row (ALERT without type) | rejected by preflight, nothing written |
 | `hbase/03_verify.rb` | runs |
 
-Reports 1-5 returned no rows because the curated tables had no data yet.
+At this point the curated tables were still empty and only the first five tables and six reports existed. The full
+run below covers the rest.
 
-## Still to do
+## Full data run (Nov 2026)
 
-1. Check the four extra tables (tariffs, weather, bank_holidays, customers) return rows after `clean_sources.py` runs.
-2. Re-run on the real Spark output (cleaned and curated tables, `meter_status`) and on the full data.
-3. Save screenshots in `screenshots/hive/` and `screenshots/hbase/`.
+`run_pipeline.sh` on the full data (the Compose stack on Podman, one laptop), checked again on 24 Nov 2026.
+
+| Check | Result |
+|---|---|
+| `hive/01_create_tables.hql` | nine tables created, all with data |
+| `dewa.readings` | 167,811,461 rows |
+| `dewa.hourly_usage`, `dewa.daily_usage` | 83,925,571 and 3,510,403 rows; `readings` adds up to 167,811,461 in both |
+| Daily totals against cleaned readings, 2013-01 | 8,184,185 readings and 2,155,819.36 kWh in both |
+| `dewa.anomalies` | 2,841 spikes on 1,322 meters, 1,907 zero runs on 232 meters |
+| `dewa.tariffs`, `weather`, `bank_holidays`, `customers` | 17,520, 20,424, 32 and 5,566 rows, no NULL prices, temperatures, names or areas |
+| `hive/02_reports.hql 2013-01` | all 13 reports run, also from the Zeppelin dashboard |
+| `hbase/02_load.sh` | 5,561 rows imported, 0 bad lines; 85 `ALERT`, 5,476 `OK` |
+| Slow first start (NameNode delayed 75 s, empty volumes, sample) | HBase waits, pipeline exits 0, 5 rows imported |
